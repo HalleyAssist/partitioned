@@ -1,6 +1,5 @@
 require 'monkey_patch_activerecord'
 require 'monkey_patch_postgres'
-require 'monkey_patch_redshift'
 
 require 'partitioned/active_record_overrides'
 require 'partitioned/partitioned_base/configurator.rb'
@@ -10,7 +9,6 @@ require 'partitioned/partitioned_base.rb'
 require 'partitioned/partitioned_base/configurator/reader'
 require 'partitioned/partitioned_base/partition_manager'
 require 'partitioned/partitioned_base/sql_adapter'
-require 'partitioned/partitioned_base/redshift_sql_adapter'
 
 require 'partitioned/by_time_field'
 require 'partitioned/by_yearly_time_field'
