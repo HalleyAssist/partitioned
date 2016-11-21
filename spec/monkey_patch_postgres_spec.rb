@@ -24,7 +24,6 @@ module ActiveRecord::ConnectionAdapters
       before do
         class Employee < ActiveRecord::Base
           include Partitioned::ActiveRecordOverrides
-          extend BulkMethodsMixin
         end
         create_tables
       end

@@ -198,12 +198,6 @@
 #  For update data, we use the following constructions,
 #  in which updates - a random data:
 #
-#  update_many - allows you to update multiple records.
-#  :set_array - additional option, you may read the description
-#  of the method update_many in the gem bulk_data_methods about this option.
-#  Employee.update_many(updates,  {:set_array => '"salary = #{table_name}.salary +
-#                                                    datatable.salary, updated_at = now()"'})
-#
 #  This construction using for update one record. You also may use update method.
 #  employee = Employee.from_partition(employee_record[:start_date]).find(employee_record[:id])
 #  employee.save
