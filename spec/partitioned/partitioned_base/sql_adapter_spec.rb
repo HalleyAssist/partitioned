@@ -153,7 +153,7 @@ module Partitioned
           expect(lambda {
             sql_adapter.create_partition_table(1)
           }).not_to raise_error
-          expect(check_existence_table.values.sort).to match_array [["employees"], ["p1"], ["schema_migrations"]]
+          expect(check_existence_table.values.sort).to match_array [["employees"], ["p1"]]
         end
       end # create_partition_table
 
@@ -162,7 +162,7 @@ module Partitioned
           create_new_schema
           sql_adapter.create_partition_table(1)
           sql_adapter.drop_partition_table(1)
-          expect(check_existence_table.values).to match_array [["employees"], ["schema_migrations"]]
+          expect(check_existence_table.values).to match_array [["employees"]]
         end
       end # drop_partition_table
 
@@ -175,7 +175,7 @@ module Partitioned
             SELECT count(*) FROM pg_class
             where relname = 'p1_id_udx'
           SQL
-          expect(result.values).to eq [["1"]]
+          expect(result.values).to eq [[1]]
         end
       end # add_partition_table_index
 

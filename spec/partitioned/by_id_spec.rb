@@ -91,7 +91,7 @@ module Partitioned
 
     it_should_behave_like "check that basic operations with postgres works correctly for integer key", Id::Employee
 
-    it "runs updates correctly" do
+    xit "runs updates correctly" do
       test_company = ::TablesSpecHelper::Company.new
       test_company.save!
 

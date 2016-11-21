@@ -24,7 +24,9 @@ module ActiveRecord
       # ****** BEGIN PARTITIONED PATCH ******
       if self.class.respond_to?(:dynamic_arel_table)
         using_arel_table = dynamic_arel_table()
-        relation = ActiveRecord::Relation.new(self.class, using_arel_table).
+        metadata = ActiveRecord::TableMetadata.new(self.class, using_arel_table)
+        predicate_builder = ActiveRecord::PredicateBuilder.new(metadata)
+        relation = ActiveRecord::Relation.new(self.class, using_arel_table, predicate_builder).
           where(using_arel_table[pk].eq(substitute))
       else
         # ****** END PARTITIONED PATCH ******
@@ -135,16 +137,7 @@ module ActiveRecord
       im.into actual_arel_table
       # ****** END PARTITIONED PATCH ******
 
-      conn = @klass.connection
-
-      substitutes = values.sort_by { |arel_attr,_| arel_attr.name }
-      binds       = substitutes.map do |arel_attr, value|
-        [@klass.columns_hash[arel_attr.name], value]
-      end
-
-      substitutes.each_with_index do |tuple, i|
-        tuple[1] = conn.substitute_at(binds[i][0], i)
-      end
+      substitutes, binds = substitute_values values
 
       if values.empty? # empty insert
         im.values = Arel.sql(connection.empty_insert_statement_value)
@@ -152,18 +145,15 @@ module ActiveRecord
         im.insert substitutes
       end
 
-      conn.insert(
-                  im,
-                  'SQL',
-                  primary_key,
-                  primary_key_value,
-                  nil,
-                  binds)
+      @klass.connection.insert(
+                                im,
+                                'SQL',
+                                primary_key,
+                                primary_key_value,
+                                nil,
+                                binds)
     end
 
-    # NOTE(hofer): This monkeypatch intended for activerecord 4.1.  Based on this code:
-    # https://github.com/rails/rails/blob/4-1-stable/activerecord/lib/active_record/relation.rb#L73-L88
-    # TODO(hofer): Update this for rails 4.2, looks like the monkeypatched method changes a bit.
     def _update_record(values, id, id_was) # :nodoc:
       substitutes, binds = substitute_values values
 
@@ -176,31 +166,23 @@ module ActiveRecord
       # ****** BEGIN PARTITIONED PATCH ******
       if @klass.respond_to?(:dynamic_arel_table)
         using_arel_table = @klass.dynamic_arel_table(Hash[*values.map { |k,v| [k.name,v] }.flatten])
-        um = scope.where(using_arel_table[@klass.primary_key].eq(id_was || id)).arel.compile_update(substitutes, @klass.primary_key)
+        relation = scope.where(using_arel_table[@klass.primary_key].name => (id_was || id))
 
-        # NOTE(hofer): The um variable got set up using
-        # klass.arel_table as its arel value.  So arel_table.name is
-        # what gets used to construct the update statement.  Here we
-        # set it to the specific partition name for this record so
-        # that the update gets run just on that partition, not on the
-        # parent one (which can cause performance issues).
+        bvs = binds + relation.bound_attributes
+        um = relation.arel.compile_update(substitutes, @klass.primary_key)
+
         begin
           @klass.arel_table.name = using_arel_table.name
-          @klass.connection.update(
-                                   um,
-                                   'SQL',
-                                   binds)
+          @klass.connection.update(um, 'SQL', bvs)
         ensure
           @klass.arel_table.name = @klass.table_name
         end
       else
         # Original lines:
-        um = scope.where(@klass.arel_table[@klass.primary_key].eq(id_was || id)).arel.compile_update(substitutes, @klass.primary_key)
-
-        @klass.connection.update(
-                                 um,
-                                 'SQL',
-                                 binds)
+        relation = scope.where(@klass.arel_table[@klass.primary_key].name => (id_was || id))
+        bvs = binds + relation.bound_attributes
+        um = relation.arel.compile_update(substitutes, @klass.primary_key)
+        @klass.connection.update(um, 'SQL', bvs)
       end
       # ****** END PARTITIONED PATCH ******
     end

@@ -162,24 +162,13 @@ module Partitioned
       # Create a single child table.
       #
       def create_partition_table(*partition_key_values)
-        create_table(configurator.table_name(*partition_key_values), {
-                       :id => false,
-                       :options => "INHERITS (#{configurator.parent_table_name(*partition_key_values)})"
-                     }) do |t|
-        end
-        add_check_constraint(*partition_key_values)
-      end
+        checks   = "( CHECK (#{configurator.check_constraint(*partition_key_values)}) )"
+        inherits = "INHERITS (#{configurator.parent_table_name(*partition_key_values)})"
 
-      #
-      # Add the check constraint to the table (if applicable)
-      #
-      def add_check_constraint(*partition_key_values)
-        constraint = configurator.check_constraint(*partition_key_values)
-        if constraint
-          sql = <<-SQL
-            ALTER TABLE #{configurator.table_name(*partition_key_values)} ADD CHECK (#{constraint});
-          SQL
-          execute(sql)
+        create_table(configurator.table_name(*partition_key_values), {
+            :id => false,
+            :options => "#{checks} #{inherits}"
+        }) do |t|
         end
       end
 
