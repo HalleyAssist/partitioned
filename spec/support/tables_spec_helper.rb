@@ -28,6 +28,7 @@ module TablesSpecHelper
           name             text not null,
           salary           integer default 3,
           company_id       integer not null,
+          skills           jsonb,
           integer_field    integer not null default 1
       );
 

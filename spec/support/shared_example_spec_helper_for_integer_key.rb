@@ -9,8 +9,9 @@ shared_examples_for "check that basic operations with postgres works correctly f
 
     # TODO tests passed only this order
     it "returns updated employee name" do
-      subject.update(1, :name => 'Kevin')
+      subject.update(1, :name => 'Kevin', skills: ['ruby', 'angularJS'])
       expect(subject.find(1).name).to eq("Kevin")
+      expect(subject.find(1).skills).to eq(['ruby', 'angularJS'])
     end
 
   end # when try to update a record with id = 1

@@ -156,7 +156,7 @@ module ActiveRecord
 
       # ****** BEGIN PARTITIONED PATCH ******
       if @klass.respond_to?(:dynamic_arel_table)
-        using_arel_table = @klass.dynamic_arel_table(Hash[*values.map { |k,v| [k.name,v] }.flatten])
+        using_arel_table = @klass.dynamic_arel_table(Hash[*values.map { |k,v| [k.name,v] }.flatten(1)])
         relation = scope.where(using_arel_table[@klass.primary_key].name => (id_was || id))
 
         bvs = binds + relation.bound_attributes
