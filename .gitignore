@@ -6,3 +6,4 @@ Gemfile.lock
 /spec/dummy/db/structure.sql
 /spec/dummy/db/schema.rb
 .idea/
+.ruby_version

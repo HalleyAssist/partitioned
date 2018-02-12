@@ -20,8 +20,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency "jquery-rails"
 
   s.add_dependency 'pg'
-  s.add_dependency 'activerecord', '~> 5.0.0.1'
-  s.add_development_dependency 'rails', '~> 5.0.0.1'
+  s.add_dependency 'activerecord', '~> 5.1'
+  s.add_development_dependency 'rails', '~> 5.1'
   s.add_development_dependency 'rspec-rails'
   s.add_development_dependency 'pry-byebug'
 end

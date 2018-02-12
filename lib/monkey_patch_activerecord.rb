@@ -39,7 +39,7 @@ module ActiveRecord
       # ****** BEGIN PARTITIONED PATCH ******
       if self.id.nil? && self.class.respond_to?(:prefetch_primary_key?) && self.class.prefetch_primary_key?
         self.id = self.class.connection.next_sequence_value(self.class.sequence_name)
-        attribute_names |= ["id"]
+        attribute_names |= ['id']
       end
 
       if self.class.respond_to?(:partition_keys)
@@ -53,6 +53,9 @@ module ActiveRecord
       self.id ||= new_id if self.class.primary_key
 
       @new_record = false
+
+      yield(self) if block_given?
+
       id
     end
 
@@ -71,10 +74,16 @@ module ActiveRecord
       # ****** END PARTITIONED PATCH ******
       attributes_values = arel_attributes_with_values_for_update(attribute_names)
       if attributes_values.empty?
-        0
+        rows_affected = 0
+        @_trigger_update_callback = true
       else
-        self.class.unscoped._update_record attributes_values, id, id_was
+        rows_affected = self.class.unscoped._update_record attributes_values, id, id_in_database
+        @_trigger_update_callback = rows_affected > 0
       end
+
+      yield(self) if block_given?
+
+      rows_affected
     end
 
   end # module Persistence
@@ -84,11 +93,8 @@ module ActiveRecord
     # This method is patched to change the default behavior of select
     # to use the Relation's Arel::Table
     def build_select(arel)
-      if !select_values.empty?
-        expanded_select = select_values.map do |field|
-          columns_hash.key?(field.to_s) ? arel_table[field] : field
-        end
-        arel.project(*expanded_select)
+      if select_values.any?
+        arel.project(*arel_columns(select_values.uniq))
       else
         # ****** BEGIN PARTITIONED PATCH ******
         # Original line:
@@ -112,9 +118,9 @@ module ActiveRecord
                                      k.name == primary_key
                                    }]
 
-        if !primary_key_value && connection.prefetch_primary_key?(klass.table_name)
-          primary_key_value = connection.next_sequence_value(klass.sequence_name)
-          values[klass.arel_table[klass.primary_key]] = primary_key_value
+        if !primary_key_value && klass.prefetch_primary_key?
+          primary_key_value = klass.next_sequence_value
+          values[arel_attribute(klass.primary_key)] = primary_key_value
         end
       end
 
@@ -139,7 +145,7 @@ module ActiveRecord
       @klass.connection.insert(
                                 im,
                                 'SQL',
-                                primary_key,
+                                primary_key || false,
                                 primary_key_value,
                                 nil,
                                 binds)
@@ -170,7 +176,7 @@ module ActiveRecord
         end
       else
         # Original lines:
-        relation = scope.where(@klass.arel_table[@klass.primary_key].name => (id_was || id))
+        relation = scope.where(@klass.primary_key => (id_was || id))
         bvs = binds + relation.bound_attributes
         um = relation.arel.compile_update(substitutes, @klass.primary_key)
         @klass.connection.update(um, 'SQL', bvs)
