@@ -25,11 +25,11 @@ module ActiveRecord
       if self.class.respond_to?(:dynamic_arel_table)
         using_arel_table = dynamic_arel_table()
         relation = ActiveRecord::Relation.new(self.class, using_arel_table).
-          where(using_arel_table[pk].eq(substitute))
+          where(self.class.primary_key => id)
       else
         # ****** END PARTITIONED PATCH ******
 
-        relation = self.class.unscoped.where(self.class.arel_table[pk].eq(substitute))
+        relation = self.class.unscoped.where(self.class.primary_key => id)
 
         # ****** BEGIN PARTITIONED PATCH ******
       end
