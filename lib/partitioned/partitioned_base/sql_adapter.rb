@@ -165,11 +165,16 @@ module Partitioned
         checks   = "( CHECK (#{configurator.check_constraint(*partition_key_values)}) )"
         inherits = "INHERITS (#{configurator.parent_table_name(*partition_key_values)})"
 
-        create_table(configurator.table_name(*partition_key_values), {
+        table_name = configurator.table_name(*partition_key_values)
+        return false if ActiveRecord::Base.connection.table_exists? table_name
+
+        create_table(table_name, {
             :id => false,
             :options => "#{checks} #{inherits}"
         }) do |t|
         end
+
+        return true
       end
 
       #

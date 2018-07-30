@@ -132,7 +132,7 @@ module Partitioned
       # create this).
       #
       def create_new_partition(*partition_key_values)
-        create_partition_table(*partition_key_values)
+        return unless create_partition_table(*partition_key_values)
         add_partition_table_index(*partition_key_values)
         add_references_to_partition_table(*partition_key_values)
         configurator.run_after_partition_table_create_hooks(*partition_key_values)
