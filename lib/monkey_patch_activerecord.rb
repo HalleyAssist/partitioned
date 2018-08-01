@@ -30,7 +30,7 @@ module ActiveRecord
 
       # ****** BEGIN PARTITIONED PATCH ******
       actual_arel_table = self.class.dynamic_arel_table(Hash[*values.map{|k,v| [k,v]}.flatten]) if self.class.respond_to?(:dynamic_arel_table)
-      arel_table = actual_arel_table ? actual_arel_table : arel_table
+      arel_table = actual_arel_table ? actual_arel_table : self.class.arel_table
       # ****** END PARTITIONED PATCH ******
 
       if values.empty?
@@ -48,7 +48,7 @@ module ActiveRecord
 
       # ****** BEGIN PARTITIONED PATCH ******
       actual_arel_table = self.class.dynamic_arel_table(Hash[*constraints.map{|k,v| [k,v]}.flatten]) if self.class.respond_to?(:dynamic_arel_table)
-      arel_table = actual_arel_table ? actual_arel_table : arel_table
+      arel_table = actual_arel_table ? actual_arel_table : self.class.arel_table
       # ****** END PARTITIONED PATCH ******
 
       dm = Arel::DeleteManager.new
