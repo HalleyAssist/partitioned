@@ -248,7 +248,9 @@ module Partitioned
             schema_parts << table_parts.first
           end
         end
-        schema_parts << table_parts.last
+        table_name = table_parts.last
+        table_name += "s" unless  ! ActiveRecord::Base.pluralize_table_names || table_name [-1] == 's'
+        schema_parts << table_name
         schema_parts << 'partitions'
         return schema_parts.join('_')
       }
