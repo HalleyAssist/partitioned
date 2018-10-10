@@ -155,7 +155,7 @@ module Partitioned
     def self.from_partition(*partition_key_values)
       table_alias_name = partition_table_alias_name(*partition_key_values)
       table = self.arel_table_from_key_values(partition_key_values, table_alias_name)
-      return ActiveRecord::Relation.new(self, table, get_predicate_builder(table))
+      return ActiveRecord::Relation.new(self, table: table, predicate_builder: get_predicate_builder(table))
     end
 
     def self.get_predicate_builder(table)
@@ -186,7 +186,7 @@ module Partitioned
     # @return [Hash] the scoping
     def self.from_partition_without_alias(*partition_key_values)
       table = self.arel_table_from_key_values(partition_key_values, nil)
-      return ActiveRecord::Relation.new(self, table, get_predicate_builder(table))
+      return ActiveRecord::Relation.new(self, table: table, predicate_builder: get_predicate_builder(table))
     end
 
     #
