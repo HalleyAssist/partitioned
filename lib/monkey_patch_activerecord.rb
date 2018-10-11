@@ -95,25 +95,4 @@ module ActiveRecord
       end
     end
   end # module Persistence
-
-  module QueryMethods
-
-    # This method is patched to change the default behavior of select
-    # to use the Relation's Arel::Table
-    def build_select(arel)
-      if !select_values.empty?
-        expanded_select = select_values.map do |field|
-          columns_hash.key?(field.to_s) ? arel_table[field] : field
-        end
-        arel.project(*expanded_select)
-      else
-        # ****** BEGIN PARTITIONED PATCH ******
-        # Original line:
-        # arel.project(@klass.arel_table[Arel.star])
-        arel.project(table[Arel.star])
-        # ****** END PARTITIONED PATCH ******
-      end
-    end
-
-  end # module QueryMethods
 end # module ActiveRecord
