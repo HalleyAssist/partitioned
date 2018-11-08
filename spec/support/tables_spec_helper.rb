@@ -3,6 +3,7 @@ require 'spec_helper'
 module TablesSpecHelper
 
   class Company < ActiveRecord::Base
+    extend BulkMethodsMixin
     has_many :employees, -> { where("companies.id == employees.companies_id") }, :class_name => 'Company'
   end
 

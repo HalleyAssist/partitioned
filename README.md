@@ -22,6 +22,9 @@ tables and target the (hopefully) one child table that contains the
 records interested.  This splits data, and meta-data (indexes) which
 provides streamlined targeted access to the desired data.
 
+Support for bulk inserts and bulk updates is also provided via
+Partitioned::Base.create_many and Partitioned::Base.update_many.
+
 ## Example
 
 
